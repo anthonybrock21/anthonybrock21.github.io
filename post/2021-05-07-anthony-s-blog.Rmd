@@ -1,0 +1,23 @@
+---
+title: Anthony's Blog
+author: ''
+date: '2021-05-07'
+slug: anthony-s-blog
+categories: []
+tags: []
+description: ''
+---
+sdfgsdfghdfsgdfshgfdgdfsgdfgsdfgdfssd
+
+
+[Link to project 1](/project/project1/)
+
+[Link to google](https://www.google.com)
+
+
+```{python}
+
+```
+
+![](/post/2021-05-07-anthony-s-blog_files/20210203_013102_20210207222951637.jpg)
+

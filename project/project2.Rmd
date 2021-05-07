@@ -1,0 +1,245 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting'
+author: "SDS348"
+date: ''
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+## Anthony Bruccoliere (adb3778)
+```{r}
+library(sandwich)
+library(lmtest)
+library(plotROC)
+library(pROC)
+library(glmnet)
+library(dplyr)
+election<-read.csv("election_turnout.csv")
+glimpse(election)
+elec<-election %>% select(region,division,turnoutho,gdppercap,trumpw)
+elec2<-elec %>% mutate(Won_By=recode(trumpw,'0'='Clinton','1'='Trump'))
+gdp_c<-elec$gdppercap-mean(elec$gdppercap)
+glimpse(elec)
+class_diag<-function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+```
+
+#Introduction
+For this project, I will be analyzing data taken from the 2016 election. This dataset had 51 observations, all states and DC, and 11 variables. I formed a separate dataset containing the variables: region, division, turnout rate, gdp per capita, and whether Trump won that state. I omitted the state identifier because that variable would interfere with later tests assessing predictor variables. I also omitted other variables that weren't of interest or were redundant. This project will evaluate the variables and their interactions through several statistical tests.
+#Manova
+```{r}
+man1 <- manova(cbind(turnoutho, gdppercap)~division, data=elec)
+summary(man1)
+summary.aov(man1)
+```
+```{r}
+elec %>% group_by(trumpw) %>% summarize(mean(turnoutho),mean(gdppercap))
+pairwise.t.test(elec$turnoutho,elec$division,p.adj="none")->output
+
+output
+```
+```{r}
+output$p.value*31
+
+1-.95^31
+
+.05/31
+```
+
+I ran a MANOVA test to determine the effect of the division on election turnout and state gdp. The initial MANOVA showed no significant interaction with the varaibles. However, after I ran the univariate ANOVAs, there was a significant interaction between divisions and turnout rate in the elections. To explore this, I ran a post hoc t test on the divisions and adjusted for error. The tests showed no significance among divisions, but the New England and West South Central divisions were the closest to showing a significant effect. I performed a total of 31 tests, so there is a 79.6% chance that there is at least one type 1 error. The bonferroni correction is .0016. These tests likely failed to show significance because the divisions and states within them are likely large enough to mask outliers. Because this data is from only from one year, this dataset likely fails most assumptions. There also doesn't appear to be any clear linear relationships among the dependent variables.
+
+#Randomization
+```{r}
+elec %>% group_by(trumpw) %>% summarize(mean(turnoutho),mean(gdppercap))
+clintgdps<-c(61924,58009,72331,69930,181185,55598,59472,41477,60097,69705,60256,48639,53834,64070,41551,72965,56009,53321,47520,56891,62213)
+trumpgdps<-c(42663,81801,43269,41129,42595,48574,39398,49328,52807,50218,41586,54159,46585,35717,47209,44308,59175,50159,70926,51052,46298,52925,40212,51902,46531,59994,48965,38567,51456,68536)
+gdps<-data.frame(candidate=c(rep("Clinton",21),rep("Trump",30)),gdp=c(clintgdps,trumpgdps))
+glimpse(gdps)
+
+gdps %>% ggplot(aes(gdp,fill=candidate))+geom_histogram(bins=10)+facet_wrap(~candidate,ncol = 2)+theme(legend.position="none")+scale_color_manual(breaks = c("Trump", "Clinton"),values=c("red", "blue"))
+gdps %>% group_by(candidate) %>% summarize(means=mean(gdp)) %>% summarize(mean_diff=diff(means)) #clinton higher mean
+
+permR<-data.frame(candidate=gdps$candidate,gdp=sample(gdps$gdp))
+permR %>% group_by(candidate) %>% summarize(means=mean(gdp)) %>% summarize(mean_diff=diff(means))
+
+dist_perm<-vector()
+for (i in 1:5000) {
+  new<-data.frame(gdp=sample(gdps$gdp),candidate=gdps$candidate)
+  dist_perm[i]<-mean(new[new$candidate=="Clinton",]$gdp)-mean(new[new$candidate=="Trump",]$gdp)}
+{hist(dist_perm,main="",ylab=""); abline(v = -14207.91,col="red")}
+mean(dist_perm>14207.91)
+mean(-14207.91>dist_perm)
+t.test(data=elec2,gdp_c~Won_By,var.eq=T)
+```
+I performed a randomization test on the GDPs of the states to explore the differences between candidates. The null hypothesis was that average GDPs were the same for both Trump and Clinton states and the alternative hypothesis was that the average GDPs were different for Trump and Clinton sates. I calculated the mean difference to be 14207.91 with Clinton states having the higher GDP. I then randomized the data and created a histogram to visualize the distribution. I added a red line at the observed difference and as you can see it is at the far extreme of the histogram. There were no randomized differences that extreme, so we can reject the null that the average GDPs were the same for both Trump and Clinton states. There is a difference between the average GDPs of Trump and Clinton states and a t-test confirms this with a p value of 0.014.
+
+
+#Linear Regression
+```{r}
+elec$gdp_c<-elec$gdppercap-mean(elec$gdppercap)
+elec$turnout_c<-elec$turnoutho-mean(elec$turnoutho)
+elec2<-elec %>% mutate(Won_By=recode(trumpw,'0'='Clinton','1'='Trump'))
+linfit<-lm(gdp_c~turnout_c*Won_By,data = elec2)
+summary(linfit)
+
+t.test(data=elec2,gdp_c~Won_By,var.eq=T)
+
+ggplot(elec2,aes(gdp_c,turnout_c,group=Won_By))+
+  geom_point(aes(color=Won_By),alpha=.5)+
+  geom_smooth(method ="lm",fullrange=T,aes(color=Won_By))+theme(legend.position ="top")+
+  scale_color_manual(breaks = c("Trump", "Clinton"),values=c("red", "blue"))
+(sum((elec$gdp_c-mean(elec$gdp_c))^2)-sum(linfit$residuals^2))/sum((elec$gdp_c-mean(elec$gdp_c))^2)
+```
+For the linear regression, i explored the interaction between turnout rate and who won the state on the states GDP. The coefficients show an intercept of 8718.5, a decrease of 161.1 for an increase of turnout rate, a decrease of 13,725.6 if won by Trump, and the slope for turnout on gdp is 698.8 higher for Trump states. Only the coefficient for the Won_By predictor was significant in predicting GDP. I plotted the model and as you can see there is not much separation between the candidates. This model also only explains 12.7% of the variation. 
+```{r}
+resids<-linfit$residuals
+fitvals<-linfit$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, color='red') 
+
+ggplot()+geom_histogram(aes(resids), bins=25)
+
+ggplot()+geom_qq(aes(sample=resids))+geom_qq_line(aes(sample=resids))
+```
+I plotted the data to test for homoskedasticity, normality, and linearity. In the first plot it appears that the data is fairly linear and exhibits homoskedasticity. In the second plot, it appears that the plot is mostly normal with a couple outliers. In the third plot, most of the points fall along the line so the data is mostly linear. Points do stray at the extremes.
+```{r}
+linfit2<-lm(gdp_c~turnout_c*Won_By,data = elec2)
+bptest(linfit2) #fail to reject null
+summary(linfit2)$coef[,1:2]
+coeftest(linfit2, vcov = vcovHC(linfit2))[,1:2]
+
+```
+The results of the bp test show a p-value of 0.596, so we fail to reject the null and conclude that the data is homoskedastic. After the robust standard error was performed, the standard error for the intercept, turnout, and Won_By all increased while the standard error for the turnout:won_by interaction decreased. 
+#Bootstrapping
+```{r}
+set.seed(1234)
+lm(gdp_c~turnout_c*Won_By,data = elec2) %>% summary
+samp_dist<-replicate(5000,{
+  boot_dat<-sample_frac(elec2,replace = T)
+  bootfit<-lm(gdp_c~turnout_c*Won_By,data = boot_dat)
+  coef(bootfit)
+})
+samp_dist %>% t %>% as.data.frame %>% summarise_all(sd)
+```
+The bootstrapped SEs are: 8212.1 for the intercept, 860.8 for the turnout, 8401.6 for trump states, and 911.1 for the interaction. These errors are all a bit higher than the robust SEs. The interaction is still slightly lower than the first SE. Because these standard errors are greater, these tests support the conclusion to fail to reject the null. The original SEs were 4574.6 for the intercept, 631.0 for the turnout, 5965.4 for the trump states, and 985.5 for the interaction.
+
+
+#logistic regression
+```{r}
+logfit<-glm(trumpw~gdppercap+turnoutho,data=elec,family="binomial")
+coeftest(logfit)
+exp(coeftest(logfit))
+
+prob<-predict(logfit,type = "response")
+table(predict=as.numeric(prob>.5),truth=elec$trumpw)%>%addmargins
+
+(14+24)/51 #Accuracy
+(24/30) #Sensitivity
+(14/21) #Specificity
+
+class_diag(prob,elec$trumpw)
+
+elec$logit<-predict(logfit,type="link")
+ggplot(elec,aes(logit, fill=as.factor(trumpw)))+geom_density(alpha=.3)+
+  theme(legend.position=c(.63,.85))+geom_vline(xintercept=0)+xlab("predictor (logit)")
+
+ROCplot<-ggplot(elec)+geom_roc(aes(d=trumpw,m=prob), n.cuts=0) 
+ROCplot
+calc_auc(ROCplot)
+```
+The coefficient estimates for my logistical regression are: 1.0059e+01 for the intercept, -7.5566e-05 for the GDP, and -9.0880e-02 for the turnout. Only the intercept and GDP were found to be significant. We can reject the null for GDPs ability to predict trump states but can't reject the null for turnout rates ability to do the same. The accuracy, sensitivity, specificity, presicion and area under the curve were calculated to be .745, .8, .6667, .774, and .776, respectively. This model will more likely than not predict correctly. The first plot depicts the predicted separation as compared to the actual. There appears to be quite a bit of error with many states improperly predicted. The ROC plot suggests the model predictions to be fair with an AUC of .776.
+#logistic regression 2 with LASSO
+```{r}
+elec3<-elec %>% select(-gdp_c,-turnout_c,-logit)
+logfit2<-glm(trumpw~.,data=elec3, family="binomial")
+summary(logfit2)
+
+prob3<-predict(logfit2,type = "response")
+class_diag(prob3,elec$trumpw)
+
+set.seed(1234)
+k=10 
+data<-elec3[sample(nrow(elec3)),] 
+folds<-cut(seq(1:nrow(elec3)),breaks=k,labels=F) 
+diags2<-NULL
+for(i in 1:k){
+train<-data[folds!=i,]
+test<-data[folds==i,]
+truth<-test$trumpw 
+fitCV<-glm(trumpw~.,data=train,family="binomial")
+probs<-predict(fitCV,newdata = test,type="response")
+diags2<-rbind(diags2,class_diag(probs,truth))
+}
+summarize_all(diags2,mean)
+
+y<-as.matrix(elec3$trumpw) #grab response
+x<-model.matrix(trumpw~.,data=elec3)[,-1] #grab predictors
+x<-scale(x)
+cv<-cv.glmnet(x,y)
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+
+Lassores<-elec3 %>% mutate(Northeast=ifelse(region=="Northeast",1,0), "New England" = ifelse(division=="New England",1,0),"Pacific" = ifelse(division=="Pacific",1,0)) %>% select(Northeast,"New England",Pacific, gdppercap, trumpw)
+
+set.seed(1234)
+k=10 
+data<-Lassores[sample(nrow(Lassores)),] 
+folds<-cut(seq(1:nrow(Lassores)),breaks=k,labels=F) 
+diags3<-NULL
+for(i in 1:k){
+train<-data[folds!=i,]
+test<-data[folds==i,]
+truth<-test$trumpw 
+fitCV<-glm(trumpw~.,data=train,family="binomial")
+probs<-predict(fitCV,newdata = test,type="response")
+diags3<-rbind(diags3,class_diag(probs,truth))
+}
+summarize_all(diags3,mean)
+
+```
+Another logistical regression was performed on all variables to predict trump states. The logistical regression showed no significant coefficients. The accuracy, sensitivity, specificity, precision and area under the curve were calculated to be .843, .9, .762, .844, and .925, respectively. All are fairly high predictors and suggest a good to great model. Following a 10 fold cross validation of the same model, the accuracy, sensitivity, specificity, precision and area under the curve were calculated to be .7667, .842, .567, NaN, and .758, respectively. These are all lower values from the original logistical regression. This new AUC suggests a fair model. I then ran a LASSO which showed coeficients for only the northeast region and the new england division. I reran the 10 fold cross validation with only these variables as predictors and recorded the diagnostics. The accuracy, sensitivity, specificity, precision and area under the curve were calculated to be .767, .842, .567, NaN, and .908, respectively. The sensitivity is much higher but the specificity is lower. The AUC with the lasso variables is a bit lower at .675 and suggests a poor model.

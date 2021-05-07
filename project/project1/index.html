@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Anthony Bruccoliere" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
+    <title>Project 1: Exploratory Data Analysis</title>
+    <meta name="generator" content="Hugo 0.83.1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../post/">BLOG</a></li>
+        
+        <li><a href="../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../project/project1/">Project 1: Exploratory Data Analysis</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<p>##Anthony Bruccoliere (adb3778)</p>
+<p>#Introduction:
+In this project, I merge two datasets and analyze their relationships. The two datasets that will be used are 2009 SAT and 2016 Election. I chose to compare these datasets because I believe they can provide an interesting insight into the some of the demographics behind elections, particularly those relating to voter’s education across states. I think this topic is really interesting because after briefly looking at the data, I can see a wide variability across states that could provide some insights into the hotly contested 2016 election.</p>
+<p>#Joining/Merging:</p>
+<pre class="r"><code>library(tidyverse)
+library(ggplot2)
+library(dplyr)
+SAT &lt;- read.csv(&quot;SAT.csv&quot;)
+glimpse(SAT)</code></pre>
+<pre><code>## Rows: 50
+## Columns: 9
+## $ X      &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,…
+## $ state  &lt;fct&gt; Alabama, Alaska, Arizona, Arkansas, California, Colorado, Conn…
+## $ expend &lt;dbl&gt; 4.405, 8.963, 4.778, 4.459, 4.992, 5.443, 8.817, 7.030, 5.718,…
+## $ ratio  &lt;dbl&gt; 17.2, 17.6, 19.3, 17.1, 24.0, 18.4, 14.4, 16.6, 19.1, 16.3, 17…
+## $ salary &lt;dbl&gt; 31.144, 47.951, 32.175, 28.934, 41.078, 34.571, 50.045, 39.076…
+## $ frac   &lt;int&gt; 8, 47, 27, 6, 45, 29, 81, 68, 48, 65, 57, 15, 13, 58, 5, 9, 11…
+## $ verbal &lt;int&gt; 491, 445, 448, 482, 417, 462, 431, 429, 420, 406, 407, 468, 48…
+## $ math   &lt;int&gt; 538, 489, 496, 523, 485, 518, 477, 468, 469, 448, 482, 511, 56…
+## $ sat    &lt;int&gt; 1029, 934, 944, 1005, 902, 980, 908, 897, 889, 854, 889, 979, …</code></pre>
+<pre class="r"><code>election &lt;- read.csv(&quot;election_turnout.csv&quot;)
+glimpse(election)</code></pre>
+<pre><code>## Rows: 51
+## Columns: 11
+## $ X         &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …
+## $ year      &lt;int&gt; 2016, 2016, 2016, 2016, 2016, 2016, 2016, 2016, 2016, 2016,…
+## $ state     &lt;fct&gt; Alabama, Alaska, Arizona, Arkansas, California, Colorado, C…
+## $ region    &lt;fct&gt; South, West, West, South, West, West, Northeast, South, Sou…
+## $ division  &lt;fct&gt; East South Central, Pacific, Mountain, West South Central, …
+## $ turnoutho &lt;dbl&gt; 59.0, 61.3, 55.0, 52.8, 56.7, 70.1, 65.2, 64.4, 60.9, 64.6,…
+## $ perhsed   &lt;dbl&gt; 84.3, 92.1, 86.0, 84.8, 81.8, 90.7, 89.9, 88.4, 89.3, 86.9,…
+## $ percoled  &lt;dbl&gt; 23.5, 28.0, 27.5, 21.1, 31.4, 38.1, 37.6, 30.0, 54.6, 27.3,…
+## $ gdppercap &lt;int&gt; 42663, 81801, 43269, 41129, 61924, 58009, 72331, 69930, 181…
+## $ ss        &lt;int&gt; 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,…
+## $ trumpw    &lt;int&gt; 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0,…</code></pre>
+<pre class="r"><code>satvote &lt;- SAT %&gt;% full_join(election, by = c(state = &quot;state&quot;)) %&gt;% 
+    select(state, sat, turnoutho, perhsed, percoled, gdppercap, 
+        trumpw) %&gt;% rename(per_hs_ed = &quot;perhsed&quot;, per_col_ed = &quot;percoled&quot;, 
+    gdp_per_cap = &quot;gdppercap&quot;) %&gt;% na.omit() %&gt;% mutate(Won_By = recode(trumpw, 
+    `0` = &quot;Clinton&quot;, `1` = &quot;Trump&quot;))
+glimpse(satvote)</code></pre>
+<pre><code>## Rows: 50
+## Columns: 8
+## $ state       &lt;fct&gt; Alabama, Alaska, Arizona, Arkansas, California, Colorado,…
+## $ sat         &lt;int&gt; 1029, 934, 944, 1005, 902, 980, 908, 897, 889, 854, 889, …
+## $ turnoutho   &lt;dbl&gt; 59.0, 61.3, 55.0, 52.8, 56.7, 70.1, 65.2, 64.4, 64.6, 59.…
+## $ per_hs_ed   &lt;dbl&gt; 84.3, 92.1, 86.0, 84.8, 81.8, 90.7, 89.9, 88.4, 86.9, 85.…
+## $ per_col_ed  &lt;dbl&gt; 23.5, 28.0, 27.5, 21.1, 31.4, 38.1, 37.6, 30.0, 27.3, 28.…
+## $ gdp_per_cap &lt;int&gt; 42663, 81801, 43269, 41129, 61924, 58009, 72331, 69930, 4…
+## $ trumpw      &lt;int&gt; 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, …
+## $ Won_By      &lt;chr&gt; &quot;Trump&quot;, &quot;Trump&quot;, &quot;Trump&quot;, &quot;Trump&quot;, &quot;Clinton&quot;, &quot;Clinton&quot;,…</code></pre>
+<p>I full joined the SAT and election datasets into a new dataset called satvote using “state” as the ID variable. Both datasets had data recorded by state so joining was fairly simple. The datasets initially contained about 20 variables but I slimmed it down to 8. I dropped several variables, like expend, ratio, region, and etc, because I either was unsure about what the variable recorded or the variable was not applicable/interesting to the analysis. I also removed all NAs which resulted in the removal of election data for the District of Colombia because that was not recorded in the SAT dataset. I renamed a few variables to help make it more clear what they were recording. Finally, I created a new variable ‘Won_By’ to label the binary data of the trumpw variable.</p>
+<p>#Wrangling and Tidying:</p>
+<pre class="r"><code>c(satvote %&gt;% filter(trumpw == &quot;0&quot;) %&gt;% summarise_at(c(&quot;sat&quot;, 
+    &quot;gdp_per_cap&quot;), mean), satvote %&gt;% filter(trumpw == &quot;1&quot;) %&gt;% 
+    summarise_at(c(&quot;sat&quot;, &quot;gdp_per_cap&quot;), mean))</code></pre>
+<pre><code>## $sat
+## [1] 932.35
+## 
+## $gdp_per_cap
+## [1] 58290.6
+## 
+## $sat
+## [1] 988.3
+## 
+## $gdp_per_cap
+## [1] 49934.8</code></pre>
+<pre class="r"><code>MetricSumm &lt;- satvote %&gt;% summarize_at(2:7, .funs = list(mean = mean, 
+    sd = sd, var = var, max = max, min = min, n.distinct = n_distinct, 
+    length = length, IQR = IQR, median = median))
+glimpse(MetricSumm)</code></pre>
+<pre><code>## Rows: 1
+## Columns: 54
+## $ sat_mean               &lt;dbl&gt; 965.92
+## $ turnoutho_mean         &lt;dbl&gt; 60.82
+## $ per_hs_ed_mean         &lt;dbl&gt; 88.224
+## $ per_col_ed_mean        &lt;dbl&gt; 29.012
+## $ gdp_per_cap_mean       &lt;dbl&gt; 53277.12
+## $ trumpw_mean            &lt;dbl&gt; 0.6
+## $ sat_sd                 &lt;dbl&gt; 74.82056
+## $ turnoutho_sd           &lt;dbl&gt; 6.179294
+## $ per_hs_ed_sd           &lt;dbl&gt; 3.089585
+## $ per_col_ed_sd          &lt;dbl&gt; 4.93404
+## $ gdp_per_cap_sd         &lt;dbl&gt; 10461.4
+## $ trumpw_sd              &lt;dbl&gt; 0.4948717
+## $ sat_var                &lt;dbl&gt; 5598.116
+## $ turnoutho_var          &lt;dbl&gt; 38.18367
+## $ per_hs_ed_var          &lt;dbl&gt; 9.545535
+## $ per_col_ed_var         &lt;dbl&gt; 24.34475
+## $ gdp_per_cap_var        &lt;dbl&gt; 109440812
+## $ trumpw_var             &lt;dbl&gt; 0.244898
+## $ sat_max                &lt;int&gt; 1107
+## $ turnoutho_max          &lt;dbl&gt; 74.2
+## $ per_hs_ed_max          &lt;dbl&gt; 92.8
+## $ per_col_ed_max         &lt;dbl&gt; 40.5
+## $ gdp_per_cap_max        &lt;int&gt; 81801
+## $ trumpw_max             &lt;int&gt; 1
+## $ sat_min                &lt;int&gt; 844
+## $ turnoutho_min          &lt;dbl&gt; 42.2
+## $ per_hs_ed_min          &lt;dbl&gt; 81.8
+## $ per_col_ed_min         &lt;dbl&gt; 19.2
+## $ gdp_per_cap_min        &lt;int&gt; 35717
+## $ trumpw_min             &lt;int&gt; 0
+## $ sat_n.distinct         &lt;int&gt; 48
+## $ turnoutho_n.distinct   &lt;int&gt; 46
+## $ per_hs_ed_n.distinct   &lt;int&gt; 42
+## $ per_col_ed_n.distinct  &lt;int&gt; 48
+## $ gdp_per_cap_n.distinct &lt;int&gt; 50
+## $ trumpw_n.distinct      &lt;int&gt; 2
+## $ sat_length             &lt;int&gt; 50
+## $ turnoutho_length       &lt;int&gt; 50
+## $ per_hs_ed_length       &lt;int&gt; 50
+## $ per_col_ed_length      &lt;int&gt; 50
+## $ gdp_per_cap_length     &lt;int&gt; 50
+## $ trumpw_length          &lt;int&gt; 50
+## $ sat_IQR                &lt;dbl&gt; 134.75
+## $ turnoutho_IQR          &lt;dbl&gt; 8.05
+## $ per_hs_ed_IQR          &lt;dbl&gt; 5.25
+## $ per_col_ed_IQR         &lt;dbl&gt; 5.825
+## $ gdp_per_cap_IQR        &lt;dbl&gt; 13507.25
+## $ trumpw_IQR             &lt;dbl&gt; 1
+## $ sat_median             &lt;dbl&gt; 945.5
+## $ turnoutho_median       &lt;dbl&gt; 61.1
+## $ per_hs_ed_median       &lt;dbl&gt; 88.85
+## $ per_col_ed_median      &lt;dbl&gt; 28.2
+## $ gdp_per_cap_median     &lt;dbl&gt; 51679
+## $ trumpw_median          &lt;dbl&gt; 1</code></pre>
+<pre class="r"><code>CollegeTurnout &lt;- satvote %&gt;% group_by(trumpw) %&gt;% mutate(average_turnout = mean(turnoutho)) %&gt;% 
+    filter(per_col_ed &gt; 30) %&gt;% arrange(-trumpw)
+CollegeTurnout %&gt;% select(state, trumpw, per_col_ed, average_turnout) %&gt;% 
+    glimpse()</code></pre>
+<pre><code>## Rows: 18
+## Columns: 4
+## Groups: trumpw [2]
+## $ state           &lt;fct&gt; Kansas, Utah, California, Colorado, Connecticut, Hawa…
+## $ trumpw          &lt;int&gt; 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+## $ per_col_ed      &lt;dbl&gt; 31.0, 31.1, 31.4, 38.1, 37.6, 30.8, 32.3, 37.9, 40.5,…
+## $ average_turnout &lt;dbl&gt; 59.25333, 59.25333, 63.17000, 63.17000, 63.17000, 63.…</code></pre>
+<pre class="r"><code>sat.stat &lt;- satvote %&gt;% group_by(trumpw) %&gt;% summarise(MEAN_SAT = mean(sat), 
+    SD_SAT = sd(sat), n = n_distinct(state), SE_SAT = sd(sat)/sqrt(n))
+gdp.stat &lt;- satvote %&gt;% group_by(trumpw) %&gt;% summarise(MEAN_GDP = mean(gdp_per_cap), 
+    SD_GDP = sd(gdp_per_cap), n = n_distinct(state), SE_GDP = sd(gdp_per_cap)/sqrt(n))
+hs.stat &lt;- satvote %&gt;% group_by(trumpw) %&gt;% summarise(MEAN_HS = mean(per_hs_ed), 
+    SD_HS = sd(per_hs_ed), n = n_distinct(state), SE_HS = sd(per_hs_ed)/sqrt(n))
+col.stat &lt;- satvote %&gt;% group_by(trumpw) %&gt;% summarise(MEAN_COL = mean(per_col_ed), 
+    SD_COL = sd(per_col_ed), n = n_distinct(state), SE_COL = sd(per_col_ed)/sqrt(n))
+turnout.stat &lt;- satvote %&gt;% group_by(trumpw) %&gt;% summarise(MEAN_turnout = mean(turnoutho), 
+    SD_turnout = sd(turnoutho), n = n_distinct(state), SE_turnout = sd(turnoutho)/sqrt(n))
+
+stats &lt;- sat.stat %&gt;% full_join(gdp.stat, by = c(trumpw = &quot;trumpw&quot;, 
+    n = &quot;n&quot;)) %&gt;% full_join(hs.stat, by = c(trumpw = &quot;trumpw&quot;, 
+    n = &quot;n&quot;)) %&gt;% full_join(col.stat, by = c(trumpw = &quot;trumpw&quot;, 
+    n = &quot;n&quot;)) %&gt;% full_join(col.stat, by = c(trumpw = &quot;trumpw&quot;, 
+    n = &quot;n&quot;)) %&gt;% mutate(Won_By = recode(trumpw, `0` = &quot;Clinton&quot;, 
+    `1` = &quot;Trump&quot;)) %&gt;% select(-trumpw) %&gt;% relocate(Won_By, 
+    n)
+longstats &lt;- stats %&gt;% pivot_longer(3:17, names_to = &quot;name&quot;, 
+    values_to = &quot;value&quot;) %&gt;% separate(name, into = c(&quot;STAT&quot;, 
+    &quot;Metric&quot;))
+glimpse(longstats)</code></pre>
+<pre><code>## Rows: 30
+## Columns: 5
+## $ Won_By &lt;chr&gt; &quot;Clinton&quot;, &quot;Clinton&quot;, &quot;Clinton&quot;, &quot;Clinton&quot;, &quot;Clinton&quot;, &quot;Clinto…
+## $ n      &lt;int&gt; 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 30…
+## $ STAT   &lt;chr&gt; &quot;MEAN&quot;, &quot;SD&quot;, &quot;SE&quot;, &quot;MEAN&quot;, &quot;SD&quot;, &quot;SE&quot;, &quot;MEAN&quot;, &quot;SD&quot;, &quot;SE&quot;, &quot;M…
+## $ Metric &lt;chr&gt; &quot;SAT&quot;, &quot;SAT&quot;, &quot;SAT&quot;, &quot;GDP&quot;, &quot;GDP&quot;, &quot;GDP&quot;, &quot;HS&quot;, &quot;HS&quot;, &quot;HS&quot;, &quot;C…
+## $ value  &lt;dbl&gt; 9.323500e+02, 5.642347e+01, 1.261667e+01, 5.829060e+04, 9.1187…</code></pre>
+<p>Two metrics I thought would be especially interesting to look at when grouped by election results were state SAT averages and GDP. I explored this relationship by finding the average SAT and GDP for states won by Trump and Clinton. The average SAT and GDP for Trump states were 932.35 and 58290.6. The average SAT and GDP for Clinton states were 988.3 and 49934.8. Trump states had a higher average GDP while Clinton states had a higher average SAT. I also ran mass summary statistics on all the metric variables to get a better picture of the data. Additionally, I wanted to get a better picture of turnout of highly educated states, so I added a column recording the average turnout of states with over 30% college educated population. Out of 18 of these states, only 2 were Trump states and Clinton states were ~4% higher for average turnout.</p>
+<p>Finally, I wanted to create a table recording the mean, standard deviation, and standard error of each of the metrics. I found these values for each of the metrics and joined the all the resulting datasets using Won_By and n as ID variables. I then rearranged the summary dataset to make it tidy. I pivoted the data longer and separated the name of the statistical summary from the metric it evaluated and put those in their own columns. The final result was a tidy statistical summary of the metrics called longstats.</p>
+<p>#Visualizing:</p>
+<pre class="r"><code>satvote %&gt;% select_if(is.numeric) %&gt;% cor(use = &quot;pair&quot;) %&gt;% as.data.frame %&gt;% 
+    rownames_to_column(&quot;var1&quot;) %&gt;% pivot_longer(-1, names_to = &quot;var2&quot;, 
+    values_to = &quot;correlation&quot;) %&gt;% ggplot(aes(var1, var2, fill = correlation)) + 
+    geom_tile() + scale_fill_gradient2(low = &quot;red&quot;, mid = &quot;white&quot;, 
+    high = &quot;blue&quot;) + geom_text(aes(label = round(correlation, 
+    2)), color = &quot;black&quot;, size = 4) + theme(axis.text.x = element_text(angle = 90, 
+    hjust = 1)) + coord_fixed() + xlab(&quot;&quot;) + ylab(&quot;&quot;) + ggtitle(&quot;Correlation Heatmap of SAT and Election Data&quot;)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(satvote, aes(state, sat, color = Won_By)) + geom_point(aes(group = trumpw)) + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = &quot;top&quot;) + ggtitle(&quot;Average State SAT Score for Each Election Result&quot;) + 
+    scale_color_manual(breaks = c(&quot;Trump&quot;, &quot;Clinton&quot;), values = c(&quot;red&quot;, 
+        &quot;blue&quot;)) + geom_hline(yintercept = 932.35, linetype = &quot;dashed&quot;, 
+    color = &quot;blue&quot;) + geom_hline(yintercept = 988.3, linetype = &quot;dashed&quot;, 
+    color = &quot;red&quot;) + ylim(800, 1150) + scale_y_continuous(&quot;Average SAT Scores (1600 Scale)&quot;, 
+    breaks = seq(800, 1150, 50)) + scale_x_discrete(&quot;States&quot;)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-3-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>satvote %&gt;% rename(SAT = &quot;sat&quot;, `GDP Per Capita` = &quot;gdp_per_cap&quot;, 
+    `Turnout Rate` = &quot;turnoutho&quot;, `Percent HS Education` = &quot;per_hs_ed&quot;, 
+    `Percent College Educated` = &quot;per_col_ed&quot;) %&gt;% pivot_longer(2:6, 
+    names_to = &quot;var1&quot;, values_to = &quot;value&quot;) %&gt;% ggplot(aes(1, 
+    value, fill = Won_By)) + geom_bar(stat = &quot;summary&quot;, position = &quot;dodge&quot;) + 
+    facet_wrap(~var1, scales = &quot;free_y&quot;) + geom_errorbar(stat = &quot;summary&quot;, 
+    position = &quot;dodge&quot;, color = &quot;white&quot;) + scale_fill_manual(breaks = c(&quot;Trump&quot;, 
+    &quot;Clinton&quot;), values = c(&quot;red&quot;, &quot;blue&quot;)) + ggtitle(&quot;Variable Averages for States Won by Trump and Clinton&quot;) + 
+    theme_dark() + ylab(&quot;Averages&quot;) + xlab(&quot;&quot;) + theme(axis.text.x = element_blank(), 
+    axis.ticks.x = element_blank())</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-3-3.png" width="768" style="display: block; margin: auto;" />
+My correlation heatmap showed fairly low correlations for all the variables. A few pairs like percent college educated and average gdp did show a correlation slightly over 0.5. It makes sense that this pair would be the highest correlation as higher paying jobs do tend to require college education. The lowest correlation value was 0.05 for turnout rate and sat scores. There is also an odd negative and weak correlation between sat scores and both GDP and college education. This unexpected result could be due to outlier states with very high SAT scores.</p>
+<p>For the scatterplot, I decided to compare state averages for SAT scores and color points by which candidate won the state in the election. I also used SAT averages for each candidate’s states calculated earlier to add dotted lines for added comparison. It appears that state won by Trump have a higher average SAT score than states won by Clinton. The data points appear to be very scattered across the graph and there doesn’t appear to be a clear unity amount the two groups of states. Another interesting observation is that Trump states hold both extremes of the SAT averages while the majority of Clinton states appear to hover around a 900 score.</p>
+<p>For by bar chart, I faceted several bar charts recording the averages for Trump and Clinton states in each of the metrics used. I utilized ggplots summary statistics to calculate each of the means and the standard error for the error bars. The most apparent differences between averages are with GDP per Capita and Percent College Educated. Clinton states have a significantly higher average for both categories. Trump states appear to have a slightly higher average SAT while Clinton states have a slightly higher average turnout rate. There doesn’t appear to be any difference in Percent High School Educated.</p>
+<p>#Dimensionality Reduction:</p>
+<pre class="r"><code>library(cluster)
+satvote.num &lt;- satvote %&gt;% select_if(is.numeric) %&gt;% scale()
+
+sil_width &lt;- vector()
+for (i in 2:10) {
+    kms &lt;- pam(satvote.num, k = i)
+    sil_width[i] &lt;- kms$silinfo$avg.width
+}
+ggplot() + geom_line(aes(x = 1:10, y = sil_width)) + scale_x_continuous(name = &quot;k&quot;, 
+    breaks = 1:10)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pam1 &lt;- satvote.num %&gt;% pam(k = 2)
+pamclust &lt;- satvote.num %&gt;% as.data.frame() %&gt;% mutate(cluster = as.factor(pam1$clustering))
+pamclust %&gt;% ggplot(aes(sat, gdp_per_cap, color = cluster)) + 
+    geom_point()</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-4-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pamclust %&gt;% group_by(cluster) %&gt;% summarize_if(is.numeric, mean, 
+    na.rm = T)</code></pre>
+<pre><code>## # A tibble: 2 x 7
+##   cluster    sat turnoutho per_hs_ed per_col_ed gdp_per_cap trumpw
+##   &lt;fct&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;
+## 1 1        0.303    -0.298    -0.227     -0.601      -0.448  0.678
+## 2 2       -0.495     0.486     0.370      0.980       0.730 -1.11</code></pre>
+<pre class="r"><code>satvote %&gt;% ggplot(aes(sat, gdp_per_cap, color = Won_By)) + geom_point() + 
+    scale_color_manual(breaks = c(&quot;Trump&quot;, &quot;Clinton&quot;), values = c(&quot;red&quot;, 
+        &quot;blue&quot;))</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-4-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pam1$silinfo$avg.width</code></pre>
+<pre><code>## [1] 0.3240868</code></pre>
+<pre class="r"><code>plot(pam1, which = 2)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-4-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># all are weak 0.26 — .5
+
+library(GGally)
+ggpairs(pamclust, columns = 1:6, aes(color = cluster))</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-4-5.png" width="672" style="display: block; margin: auto;" /></p>
+<p>I chose to utilize silhouette width and pam clustering to analyze my data. The silhouette width helped me decide how many separated clusters I should form. I decided on two because that had the highest silhouette width and makes sense to the binary results of the election. I ran a pam cluster and mapped it to ggplot to compare with the actual separation of Trump and Clinton states. The cluster appears to be very similar to the actual groups of states. To get a better look at the cluster, I plotted the full cluster. By coincidence, the red cluster is overwhelmingly Trump states and the blue cluster is overwhelmingly Clinton states. The pam cluster showed the blue cluster with slightly higher stats in every metric except SAT. The strongest correlation, -0.703, appears to be with percent college educated and Trump wins. This suggests that higher educated states were more likely to vote Clinton. Other strong pairs were with College education and GDP, College education and turnout, and High School education and turnout. All three of those pairs had correlations higher than .5. All other pairs were fairly weak with correlations with magnitudes ranging from 0-.4. Overall, this pam cluster was surprisingly accurate in separating Trump and Clinton states.</p>
+<p>I ran an analysis on the silhouette width which showed an average silhouette width of 0.32. This results suggests that the structure is weak and could be artificial. This was somewhat expected as the SAT data is from 2009 and the election data is from 2016. It can be expected that some changes in data have occurred between data collection. Despite its limitations, this exploration of these two datasets did repeatedly show an interesting correlation between college education and gdp as well as significant correlation between SAT averages and Election results.</p>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../js/docs.min.js"></script>
+<script src="../../js/main.js"></script>
+
+<script src="../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>
