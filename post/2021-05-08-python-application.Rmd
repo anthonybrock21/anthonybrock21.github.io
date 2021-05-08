@@ -1,0 +1,53 @@
+---
+title: Python Application
+author: ''
+date: '2021-05-08'
+slug: python-application
+categories: []
+tags: []
+description: ''
+---
+
+Today we will be looking at some applications of python and how it can be used to analyze data. 
+
+![](/post/2021-05-08-python-application_files/Boxer-puppy-laying-down.jpg)
+```{python}
+
+
+#python
+dog_lifespan ={
+'German Shepherd': 11,
+'Golden Retriever': 11,
+'French Bulldog': 8,
+'Boxer': 9,
+'Great Dane': 6,
+'Shih Tzu': 14,
+'Havanese': 15,
+'Bernese Mountain Dogs': 6,
+}
+
+dog_lifespan
+
+dog_weight ={
+'German Shepherd': 66,
+'Golden Retriever': 65,
+'French Bulldog': 20,
+'Boxer': 60,
+'Great Dane': 120,
+'Shih Tzu': 9,
+'Havanese': 10,
+'Bernese Mountain Dogs': 84,
+}
+
+dog_weight
+```
+
+```{r}
+#r
+library(reticulate)
+py$dog_weight['Boxer']
+py$dog_lifespan$Boxer
+py$dog_lifespan
+
+```
+

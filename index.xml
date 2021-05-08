@@ -6,16 +6,15 @@
     <description>Recent content on Anthony Bruccoliere</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Fri, 07 May 2021 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 08 May 2021 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Anthony&#39;s Blog</title>
-      <link>/post/2021/05/07/anthony-s-blog/</link>
-      <pubDate>Fri, 07 May 2021 00:00:00 +0000</pubDate>
+      <title>Python Application</title>
+      <link>/post/2021/05/08/python-application/</link>
+      <pubDate>Sat, 08 May 2021 00:00:00 +0000</pubDate>
       
-      <guid>/post/2021/05/07/anthony-s-blog/</guid>
-      <description>sdfgsdfghdfsgdfshgfdgdfsgdfgsdfgdfssd
-Link to project 1
-Link to google</description>
+      <guid>/post/2021/05/08/python-application/</guid>
+      <description> Today we will be looking at some applications of python and how it can be used to analyze data.
+ #python dog_lifespan ={ &amp;#39;German Shepherd&amp;#39;: 11, &amp;#39;Golden Retriever&amp;#39;: 11, &amp;#39;French Bulldog&amp;#39;: 8, &amp;#39;Boxer&amp;#39;: 9, &amp;#39;Great Dane&amp;#39;: 6, &amp;#39;Shih Tzu&amp;#39;: 14, &amp;#39;Havanese&amp;#39;: 15, &amp;#39;Bernese Mountain Dogs&amp;#39;: 6, } dog_lifespan ## {&amp;#39;German Shepherd&amp;#39;: 11, &amp;#39;Golden Retriever&amp;#39;: 11, &amp;#39;French Bulldog&amp;#39;: 8, &amp;#39;Boxer&amp;#39;: 9, &amp;#39;Great Dane&amp;#39;: 6, &amp;#39;Shih Tzu&amp;#39;: 14, &amp;#39;Havanese&amp;#39;: 15, &amp;#39;Bernese Mountain Dogs&amp;#39;: 6} dog_weight ={ &amp;#39;German Shepherd&amp;#39;: 66, &amp;#39;Golden Retriever&amp;#39;: 65, &amp;#39;French Bulldog&amp;#39;: 20, &amp;#39;Boxer&amp;#39;: 60, &amp;#39;Great Dane&amp;#39;: 120, &amp;#39;Shih Tzu&amp;#39;: 9, &amp;#39;Havanese&amp;#39;: 10, &amp;#39;Bernese Mountain Dogs&amp;#39;: 84, } dog_weight ## {&amp;#39;German Shepherd&amp;#39;: 66, &amp;#39;Golden Retriever&amp;#39;: 65, &amp;#39;French Bulldog&amp;#39;: 20, &amp;#39;Boxer&amp;#39;: 60, &amp;#39;Great Dane&amp;#39;: 120, &amp;#39;Shih Tzu&amp;#39;: 9, &amp;#39;Havanese&amp;#39;: 10, &amp;#39;Bernese Mountain Dogs&amp;#39;: 84} #r library(reticulate) py$dog_weight[&amp;#39;Boxer&amp;#39;] ## $Boxer ## [1] 60 py$dog_lifespan$Boxer ## [1] 9 py$dog_lifespan ## $`German Shepherd` ## [1] 11 ## ## $`Golden Retriever` ## [1] 11 ## ## $`French Bulldog` ## [1] 8 ## ## $Boxer ## [1] 9 ## ## $`Great Dane` ## [1] 6 ## ## $`Shih Tzu` ## [1] 14 ## ## $Havanese ## [1] 15 ## ## $`Bernese Mountain Dogs` ## [1] 6 </description>
     </item>
     
     <item>
